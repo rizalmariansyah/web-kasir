@@ -1,5 +1,7 @@
 let barang = JSON.parse(localStorage.getItem("barang")) || [];
 let keranjang = [];
+let riwayatPenjualan = JSON.parse(localStorage.getItem("riwayatPenjualan")) || [];
+let nomorPenjualan = Number(localStorage.getItem("nomorPenjualan")) || 0;
 
 
 // =========================
@@ -37,7 +39,49 @@ function simpanBarang() {
     resetForm();
     tampilkanBarang();
     isiPilihanBarang();
+   
 }
+
+function tampilkanLaporan() {
+
+    let tabel = document.getElementById("tabelLaporan");
+
+    tabel.innerHTML = "";
+
+    riwayatPenjualan.forEach(function(transaksi) {
+
+        transaksi.barang.forEach(function(item, index) {
+
+            tabel.innerHTML += `
+                <tr>
+                    <td>${String(transaksi.nomor).padStart(6, "0")}</td>
+                    <td>${transaksi.tanggal}</td>
+                    <td>${transaksi.kasir}</td>
+                    <td>${item.nama}</td>
+                    <td>${item.jumlah}</td>
+                    <td>${formatRupiah(item.harga)}</td>
+                    <td>${formatRupiah(item.subtotal)}</td>
+                    <td>${index === 0 ? formatRupiah(transaksi.total) : ""}</td>
+                </tr>
+            `;
+        });
+    });
+}
+
+
+function hitungTotalPendapatan() {
+    
+    let total = 0;
+    
+    riwayatPenjualan.forEach(function(transaksi) {
+        total += transaksi.total;
+    });
+    
+    document.getElementById("totalPendapatan").textContent =
+    formatRupiah(total);
+}
+
+
 
 
 // =========================
@@ -180,6 +224,7 @@ function tambahKeranjang() {
     let jumlah = Number(
         document.getElementById("jumlahBeli").value
     );
+    let hargaJual = Number(document.getElementById("hargaJual").value);
 
     if (index === "") {
         alert("Pilih barang terlebih dahulu!");
@@ -189,6 +234,10 @@ function tambahKeranjang() {
     if (jumlah <= 0) {
         alert("Jumlah harus lebih dari 0!");
         return;
+    }
+    if (hargaJual <= 0) {
+    alert("Harga jual harus lebih dari 0!");
+    return;
     }
 
     let item = barang[index];
@@ -215,7 +264,8 @@ function tambahKeranjang() {
 
         keranjang.push({
             index: Number(index),
-            jumlah: jumlah
+            jumlah: jumlah,
+            hargaJual: hargaJual
         });
     }
 
@@ -241,7 +291,7 @@ function tampilkanKeranjang() {
 
         let data = barang[item.index];
 
-        let subtotal = data.harga * item.jumlah;
+        let subtotal = item.hargaJual * item.jumlah;
 
         total += subtotal;
 
@@ -250,7 +300,7 @@ function tampilkanKeranjang() {
 
                 <td>${data.nama}</td>
 
-                <td>${formatRupiah(data.harga)}</td>
+                <td>${formatRupiah(item.hargaJual)}</td>
 
                 <td>${item.jumlah}</td>
 
@@ -299,7 +349,7 @@ function ambilTotal() {
 
         let data = barang[item.index];
 
-        total += data.harga * item.jumlah;
+        total += item.hargaJual * item.jumlah;
     });
 
     return total;
@@ -368,7 +418,42 @@ function prosesPembayaran() {
 
     // Buat struk
 
+    nomorPenjualan++;
+    
     buatStruk(bayar, total);
+
+    let transaksi = {
+        nomor: nomorPenjualan,
+        tanggal: new Date().toLocaleString("id-ID"),
+        kasir: document.getElementById("namaKasir").value,
+        total: total,
+        bayar: bayar,
+        kembali: bayar - total,
+        barang: keranjang.map(function(item) {
+            let data = barang[item.index];
+
+            return {
+                nama: data.nama,
+                jumlah: item.jumlah,
+                harga: item.hargaJual,
+                subtotal: item.hargaJual * item.jumlah
+            };
+        })
+    };
+
+    riwayatPenjualan.push(transaksi);
+
+    localStorage.setItem(
+        "riwayatPenjualan",
+        JSON.stringify(riwayatPenjualan)
+    );
+
+    localStorage.setItem(
+        "nomorPenjualan",
+        nomorPenjualan
+    );
+
+
 
 
     // Reset transaksi
@@ -380,6 +465,9 @@ function prosesPembayaran() {
     tampilkanKeranjang();
     tampilkanBarang();
     isiPilihanBarang();
+    tampilkanLaporan();
+    hitungTotalPendapatan();
+    tampilkanDashboard();
 }
 
 
@@ -392,7 +480,10 @@ function buatStruk(bayar, total) {
     let isi = document.getElementById("isiStruk");
     let namaKasir = document.getElementById("namaKasir").value;
 
-    isi.innerHTML = `<p><strong>Kasir:</strong> ${namaKasir}</p>`;
+    isi.innerHTML =`<p><strong>No. Penjualan:</strong> ${String(nomorPenjualan).padStart(6, "0")}</p>
+    <p><strong>Kasir:</strong> ${namaKasir}</p>
+    <hr>
+`;
     
     
 
@@ -401,7 +492,7 @@ function buatStruk(bayar, total) {
         let data = barang[item.index];
 
         let subtotal =
-            data.harga * item.jumlah;
+            item.hargaJual * item.jumlah;
 
         isi.innerHTML += `
             <div class="struk-item">
@@ -465,8 +556,11 @@ tampilkanBarang();
 isiPilihanBarang();
 
 function exportData() {
+
     let data = {
-        barang: barang
+        barang: barang,
+        riwayatPenjualan: riwayatPenjualan,
+        nomorPenjualan: nomorPenjualan
     };
 
     let file = new Blob(
@@ -475,8 +569,10 @@ function exportData() {
     );
 
     let link = document.createElement("a");
+
     link.href = URL.createObjectURL(file);
     link.download = "data-kasir.json";
+
     link.click();
 
     URL.revokeObjectURL(link.href);
@@ -502,17 +598,46 @@ function importData(event) {
             }
 
             barang = data.barang;
+            riwayatPenjualan = data.riwayatPenjualan || [];
+            nomorPenjualan = data.nomorPenjualan || 0;
 
             localStorage.setItem("barang", JSON.stringify(barang));
+            localStorage.setItem("riwayatPenjualan", JSON.stringify(riwayatPenjualan));
+            localStorage.setItem("nomorPenjualan", nomorPenjualan);
+
 
             tampilkanBarang();
             isiPilihanBarang();
+            tampilkanLaporan();
+            hitungTotalPendapatan();
+            tampilkanDashboard();
 
             alert("Data berhasil diimport!");
-        } catch (error) {
+        } 
+        catch (error) {
             alert("File tidak dapat dibaca!");
         }
     };
 
     reader.readAsText(file);
 }
+
+function tampilkanDashboard() {
+
+    document.getElementById("jumlahBarang").textContent =
+        barang.length;
+
+    document.getElementById("jumlahTransaksi").textContent =
+        riwayatPenjualan.length;
+
+    let total = 0;
+
+    riwayatPenjualan.forEach(function(transaksi) {
+        total += transaksi.total;
+    });
+
+    document.getElementById("pendapatanDashboard").textContent =
+        formatRupiah(total);
+}
+
+tampilkanDashboard();
