@@ -463,3 +463,56 @@ function formatRupiah(angka) {
 
 tampilkanBarang();
 isiPilihanBarang();
+
+function exportData() {
+    let data = {
+        barang: barang
+    };
+
+    let file = new Blob(
+        [JSON.stringify(data, null, 2)],
+        { type: "application/json" }
+    );
+
+    let link = document.createElement("a");
+    link.href = URL.createObjectURL(file);
+    link.download = "data-kasir.json";
+    link.click();
+
+    URL.revokeObjectURL(link.href);
+}
+
+
+function importData(event) {
+    let file = event.target.files[0];
+
+    if (!file) {
+        return;
+    }
+
+    let reader = new FileReader();
+
+    reader.onload = function(e) {
+        try {
+            let data = JSON.parse(e.target.result);
+
+            if (!data.barang || !Array.isArray(data.barang)) {
+                alert("File data tidak valid!");
+                return;
+            }
+
+            barang = data.barang;
+
+            localStorage.setItem("barang", JSON.stringify(barang));
+
+            tampilkanBarang();
+            isiPilihanBarang();
+
+            alert("Data berhasil diimport!");
+        } catch (error) {
+            alert("File tidak dapat dibaca!");
+        }
+    };
+
+    reader.readAsText(file);
+}
