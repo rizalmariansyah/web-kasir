@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Kasir Akuntika Corner</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>Akuntika Corner</h1>
+        <p>Manajemen Stok & Penjualan</p>
+    </header>
+
+    <main>
+
+        <!-- DATA BARANG -->
+        <section class="card">
+            <h2>📦 Data Barang</h2>
+
+            <div class="form-grid">
+                <input type="hidden" id="editIndex">
+
+                <input type="text" id="kodeBarang" placeholder="Kode barang">
+                <input type="text" id="namaBarang" placeholder="Nama barang">
+                <input type="number" id="hargaBarang" placeholder="Harga">
+                <input type="number" id="stokBarang" placeholder="Stok">
+
+                <button onclick="simpanBarang()">Simpan Barang</button>
+                <button class="secondary" onclick="resetForm()">Batal</button>
+            </div>
+
+            <input
+                type="text"
+                id="cariBarang"
+                placeholder="🔎 Cari barang..."
+                oninput="tampilkanBarang()"
+            >
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Kode</th>
+                        <th>Nama</th>
+                        <th>Harga</th>
+                        <th>Stok</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tabelBarang"></tbody>
+            </table>
+        </section>
+
+
+        <!-- PENJUALAN -->
+        <section class="card">
+            <h2>🛒 Penjualan</h2>
+            <input type="text" id="namaKasir" placeholder="Nama kasir">
+            <br>
+            <br>
+
+            <div class="form-grid">
+                <select id="pilihBarang">
+                    <option value="">-- Pilih Barang --</option>
+                </select>
+
+                <input
+                    type="number"
+                    id="jumlahBeli"
+                    placeholder="Jumlah"
+                    min="1"
+                    value="1"
+                >
+
+                <button onclick="tambahKeranjang()">
+                    Tambah ke Keranjang
+                </button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Barang</th>
+                        <th>Harga</th>
+                        <th>Qty</th>
+                        <th>Subtotal</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tabelKeranjang"></tbody>
+            </table>
+
+            <div class="total-box">
+                <h2>Total: <span id="totalHarga">Rp 0</span></h2>
+
+                <input
+                    type="number"
+                    id="uangBayar"
+                    placeholder="Uang pembayaran"
+                    oninput="hitungKembalian()"
+                >
+
+                <h3>
+                    Kembalian:
+                    <span id="kembalian">Rp 0</span>
+                </h3>
+
+                <button class="success" onclick="prosesPembayaran()">
+                    Bayar & Cetak Struk
+                </button>
+            </div>
+        </section>
+
+
+        <!-- STRUK -->
+        <section class="card struk-area" id="struk">
+            <h2>Akuntika Corner</h2>
+            <p>Struk Pembayaran</p>
+
+            <hr>
+
+            <div id="isiStruk">
+                Belum ada transaksi.
+            </div>
+
+            <hr>
+
+            <div id="detailPembayaran"></div>
+        </section>
+
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
