@@ -150,8 +150,16 @@ th {
     justify-content: space-between;
 }
 
-
 @media print {
+    @page {
+        size: 80mm;
+        margin: 0;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+    }
 
     body * {
         visibility: hidden;
@@ -167,9 +175,15 @@ th {
         left: 0;
         top: 0;
         width: 80mm;
+        max-width: 80mm;
+        height: fit-content;
+        margin: 0;
+        padding: 5mm;
         box-shadow: none;
     }
+    
 }
+
 
 @media (max-width: 800px) {
 
